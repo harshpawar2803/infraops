@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>InfraOps Server Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="logo">
+        <div class="logo-circle">S</div>
+<h2>InfraOps</h2>
+<p>Enterprise Monitoring Platform</p>    
+</div>
+
+    <a>🏠 Dashboard</a>
+    <a>📊 Server Load</a>
+    <a>👥 Login Users</a>
+    <a>🔐 Security Alerts</a>
+    <a>📜 Logs Viewer</a>
+    <a>⬇ Reports</a>
+</div>
+
+<div class="main">
+
+    <div class="header">
+        <div>
+            <h1>🚀 InfraOps Server Monitor</h1>
+            <p>Professional Linux Monitoring Dashboard for RHEL 10</p>
+        </div>
+        <div class="author">
+<b>Developer:</b> Harsh Pawar<br>
+<b>Project:</b> InfraOps
+        </div>
+    </div>
+
+    <div class="top">
+        <div class="card">🖥 Hostname<br><span id="hostname"></span></div>
+        <div class="card">🌐 IP Address<br><span id="ip"></span></div>
+        <div class="card">⏱ Uptime<br><span id="uptime"></span></div>
+    </div>
+
+    <div class="grid">
+        <div class="box">
+            <h2>CPU Usage</h2>
+            <h3 id="cpu">0%</h3>
+            <canvas id="cpuChart"></canvas>
+        </div>
+
+        <div class="box">
+            <h2>Memory Usage</h2>
+            <h3 id="memory">0%</h3>
+            <canvas id="memChart"></canvas>
+        </div>
+
+        <div class="box">
+            <h2>Disk Usage</h2>
+            <h3 id="disk">0%</h3>
+            <canvas id="diskChart"></canvas>
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>⚡ Server Load Average</h2>
+        <pre id="loadavg"></pre>
+    </div>
+
+    <div class="box">
+        <h2>🛡 Running Services</h2>
+        <pre id="services"></pre>
+    </div>
+
+    <div class="grid">
+        <div class="box">
+            <h2>👥 Current Login Users</h2>
+            <pre id="users"></pre>
+        </div>
+
+        <div class="box">
+            <h2>🔐 SSH Remote Users</h2>
+            <pre id="ssh_users"></pre>
+        </div>
+    </div>
+
+    <div class="box alert-box">
+        <h2>🚨 Security Alerts</h2>
+
+        <h3>❌ Failed Password Logs</h3>
+        <pre id="failed"></pre>
+
+        <h3>✅ Successful SSH Login Logs</h3>
+        <pre id="success"></pre>
+
+        <h3>📡 Telnet Logs</h3>
+        <pre id="telnet"></pre>
+    </div>
+
+    <div class="box">
+        <h2>📜 System Logs Viewer</h2>
+        <input type="text" id="search" placeholder="Search logs here...">
+        <button onclick="loadLogs()">Search</button>
+        <pre id="logs"></pre>
+    </div>
+
+    <a href="/export" class="btn">⬇ Download CSV Report</a>
+
+    <div class="footer">
+        Designed and Developed by Harsh Pawar    </div>
+
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
+
