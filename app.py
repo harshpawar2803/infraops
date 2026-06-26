@@ -158,7 +158,7 @@ def auth_logs():
 
 @app.route("/export")
 def export():
-    file = "/opt/infraops/infraops_report.csv"
+    file = os.path.join(DATA_DIR, "infraops_report.csv")
 
     con = sqlite3.connect(DB)
     cur = con.cursor()
