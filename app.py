@@ -8,7 +8,12 @@ import csv
 import datetime
 
 app = Flask(__name__)
-DB = "/opt/infraops/monitor.db"
+
+
+DATA_DIR = os.getenv("DATA_DIR", "/opt/infraops")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+DB = os.path.join(DATA_DIR, "monitor.db")
 
 def init_db():
     con = sqlite3.connect(DB)
