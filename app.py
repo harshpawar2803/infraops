@@ -5,6 +5,7 @@ import os
 import subprocess
 import sqlite3
 import csv
+import platform
 import datetime
 
 app = Flask(__name__)
@@ -87,24 +88,56 @@ def stats():
     con.close()
 
     return jsonify({
-        "hostname": socket.gethostname(),
-        "ip": get_server_ip(),
-        "uptime": run_cmd("uptime -p"),
-        "cpu": cpu,
-        "memory": memory,
-        "disk": disk,
-        "loadavg": loadavg,
-        "cpu_color": get_status(cpu),
-        "memory_color": get_status(memory),
-        "disk_color": get_status(disk),
-        "users": run_cmd("who"),
-        "ssh_users": run_cmd("who | grep -i pts || true"),
-        "services": {
-            "sshd": run_cmd("systemctl is-active sshd 2>/dev/null"),
-            "firewalld": run_cmd("systemctl is-active firewalld 2>/dev/null"),
-            "crond": run_cmd("systemctl is-active crond 2>/dev/null")
-        }
-    })
+    "hostname": socket.gethostname(),
+
+    # System Information
+    "os": run_cmd("grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '\"'"),
+    "os_version": run_cmd("cat /etc/redhat-release"),
+    "kernel": run_cmd("uname -r"),
+    "architecture": platform.machine(),
+    "python_version": platform.python_version(),
+
+    # Network
+    "ip": get_server_ip(),
+
+    # System Status
+    "uptime": run_cmd("uptime -p"),
+    "boot_time": datetime.datetime.fromtimestamp(
+        psutil.boot_time()
+    ).strftime("%Y-%m-%d %H:%M:%S"),
+
+    # CPU
+    "cpu": cpu,
+    "cpu_count": psutil.cpu_count(logical=True),
+    "cpu_frequency": round(psutil.cpu_freq().current, 2) if psutil.cpu_freq() else 0,
+    "cpu_color": get_status(cpu),
+
+    # Memory
+    "memory": memory,
+    "total_memory": round(psutil.virtual_memory().total / (1024**3), 2),
+    "available_memory": round(psutil.virtual_memory().available / (1024**3), 2),
+    "memory_color": get_status(memory),
+
+    # Disk
+    "disk": disk,
+    "disk_total": round(psutil.disk_usage("/").total / (1024**3), 2),
+    "disk_free": round(psutil.disk_usage("/").free / (1024**3), 2),
+    "disk_color": get_status(disk),
+
+    # Load Average
+    "loadavg": loadavg,
+
+    # Users
+    "users": run_cmd("who"),
+    "ssh_users": run_cmd("who | grep -i pts || true"),
+
+    # Services
+    "services": {
+        "sshd": run_cmd("systemctl is-active sshd 2>/dev/null"),
+        "firewalld": run_cmd("systemctl is-active firewalld 2>/dev/null"),
+        "crond": run_cmd("systemctl is-active crond 2>/dev/null")
+    }
+})
 
 
 @app.route("/api/logs")
@@ -176,5 +209,5 @@ def export():
 
 if __name__ == "__main__":
     init_db()
-    app.run(host="0.0.0.0", port=8080)
-
+    port = int(os.getenv("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=True)

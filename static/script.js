@@ -47,6 +47,9 @@ function loadStats() {
     .then(res => res.json())
     .then(data => {
         document.getElementById("hostname").innerText = data.hostname;
+        document.getElementById("os").innerText = data.os;
+        document.getElementById("kernel").innerText = data.kernel;
+        document.getElementById("architecture").innerText = data.architecture;
         document.getElementById("ip").innerText = data.ip;
         document.getElementById("uptime").innerText = data.uptime;
 
