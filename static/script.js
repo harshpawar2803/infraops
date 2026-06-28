@@ -46,32 +46,98 @@ function loadStats() {
     fetch("/api/stats")
     .then(res => res.json())
     .then(data => {
-        document.getElementById("hostname").innerText = data.hostname;
-        document.getElementById("os").innerText = data.os;
-        document.getElementById("kernel").innerText = data.kernel;
-        document.getElementById("architecture").innerText = data.architecture;
-        document.getElementById("ip").innerText = data.ip;
-        document.getElementById("uptime").innerText = data.uptime;
 
+        // ==========================
+        // System Information
+        // ==========================
+        document.getElementById("hostname").innerText = data.hostname || "-";
+        document.getElementById("os").innerText = data.os || "-";
+        document.getElementById("kernel").innerText = data.kernel || "-";
+        document.getElementById("architecture").innerText = data.architecture || "-";
+        document.getElementById("ip").innerText = data.ip || "-";
+        document.getElementById("uptime").innerText = data.uptime || "-";
+
+        // ==========================
+        // AWS EC2 Information
+        // ==========================
+        document.getElementById("instance_id").innerText =
+            data.instance_id || "Local Machine";
+
+        document.getElementById("instance_type").innerText =
+            data.instance_type || "-";
+
+        document.getElementById("region").innerText =
+            data.region || "-";
+
+        document.getElementById("availability_zone").innerText =
+            data.availability_zone || "-";
+
+        // ==========================
+        // CPU
+        // ==========================
         document.getElementById("cpu").innerText = data.cpu + "%";
         document.getElementById("cpu").className = data.cpu_color;
 
+        // ==========================
+        // Memory
+        // ==========================
         document.getElementById("memory").innerText = data.memory + "%";
         document.getElementById("memory").className = data.memory_color;
 
+        // ==========================
+        // Disk
+        // ==========================
         document.getElementById("disk").innerText = data.disk + "%";
         document.getElementById("disk").className = data.disk_color;
 
-        document.getElementById("loadavg").innerText = data.loadavg;
-        document.getElementById("users").innerText = data.users;
-        document.getElementById("ssh_users").innerText = data.ssh_users;
-        document.getElementById("services").innerText = JSON.stringify(data.services, null, 2);
+        // ==========================
+        // Load Average
+        // ==========================
+        if (Array.isArray(data.loadavg)) {
+            document.getElementById("loadavg").innerText =
+                data.loadavg.join("  |  ");
+        } else {
+            document.getElementById("loadavg").innerText = data.loadavg;
+        }
 
+        // ==========================
+        // Users
+        // ==========================
+        document.getElementById("users").innerText =
+            data.users || "No users logged in";
+
+        document.getElementById("ssh_users").innerText =
+            data.ssh_users || "No SSH users";
+
+        // ==========================
+        // Running Services
+        // ==========================
+        let serviceText = "";
+
+        for (const service in data.services) {
+            serviceText +=
+                service.toUpperCase() +
+                " : " +
+                data.services[service] +
+                "\n";
+        }
+
+        document.getElementById("services").innerText = serviceText;
+
+        // ==========================
+        // Alerts
+        // ==========================
         if (data.cpu > 80) popupAlert("High CPU Usage");
+
         if (data.memory > 80) popupAlert("High Memory Usage");
+
         if (data.disk > 80) popupAlert("High Disk Usage");
 
+        // ==========================
+        // Charts
+        // ==========================
         let now = new Date().toLocaleTimeString();
+
         labels.push(now);
         cpuData.push(data.cpu);
         memData.push(data.memory);
@@ -87,9 +153,12 @@ function loadStats() {
         updateChart(cpuChart, cpuData);
         updateChart(memChart, memData);
         updateChart(diskChart, diskData);
+
+    })
+    .catch(err => {
+        console.error(err);
     });
 }
-
 function loadAuth() {
     fetch("/api/auth")
     .then(res => res.json())

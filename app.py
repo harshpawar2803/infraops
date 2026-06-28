@@ -7,6 +7,8 @@ import sqlite3
 import csv
 import platform
 import datetime
+import requests
+import docker
 
 app = Flask(__name__)
 
@@ -56,8 +58,53 @@ def get_server_ip():
         ip = s.getsockname()[0]
         s.close()
         return ip
-    except:
+    except Exception:
         return "127.0.0.1"
+
+
+def get_ec2_metadata():
+    metadata = {
+        "instance_id": "Local Machine",
+        "instance_type": "-",
+        "availability_zone": "-",
+        "region": "-"
+    }
+
+    try:
+        token = requests.put(
+            "http://169.254.169.254/latest/api/token",
+            headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
+            timeout=2
+        ).text
+
+        headers = {
+            "X-aws-ec2-metadata-token": token
+        }
+
+        metadata["instance_id"] = requests.get(
+            "http://169.254.169.254/latest/meta-data/instance-id",
+            headers=headers,
+            timeout=2
+        ).text
+
+        metadata["instance_type"] = requests.get(
+            "http://169.254.169.254/latest/meta-data/instance-type",
+            headers=headers,
+            timeout=2
+        ).text
+
+        metadata["availability_zone"] = requests.get(
+            "http://169.254.169.254/latest/meta-data/placement/availability-zone",
+            headers=headers,
+            timeout=2
+        ).text
+
+        metadata["region"] = metadata["availability_zone"][:-1]
+
+    except Exception:
+        pass
+
+    return metadata
 
 
 @app.route("/")
@@ -71,6 +118,7 @@ def stats():
     memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage("/").percent
     loadavg = os.getloadavg()
+    ec2 = get_ec2_metadata()
 
     con = sqlite3.connect(DB)
     cur = con.cursor()
@@ -88,56 +136,62 @@ def stats():
     con.close()
 
     return jsonify({
-    "hostname": socket.gethostname(),
+        # AWS EC2 Information
+        "instance_id": ec2["instance_id"],
+        "instance_type": ec2["instance_type"],
+        "availability_zone": ec2["availability_zone"],
+        "region": ec2["region"],
 
-    # System Information
-    "os": run_cmd("grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '\"'"),
-    "os_version": run_cmd("cat /etc/redhat-release"),
-    "kernel": run_cmd("uname -r"),
-    "architecture": platform.machine(),
-    "python_version": platform.python_version(),
+        "hostname": socket.gethostname(),
 
-    # Network
-    "ip": get_server_ip(),
+        # System Information
+        "os": run_cmd("grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '\"'"),
+        "os_version": run_cmd("cat /etc/redhat-release"),
+        "kernel": run_cmd("uname -r"),
+        "architecture": platform.machine(),
+        "python_version": platform.python_version(),
 
-    # System Status
-    "uptime": run_cmd("uptime -p"),
-    "boot_time": datetime.datetime.fromtimestamp(
-        psutil.boot_time()
-    ).strftime("%Y-%m-%d %H:%M:%S"),
+        # Network
+        "ip": get_server_ip(),
 
-    # CPU
-    "cpu": cpu,
-    "cpu_count": psutil.cpu_count(logical=True),
-    "cpu_frequency": round(psutil.cpu_freq().current, 2) if psutil.cpu_freq() else 0,
-    "cpu_color": get_status(cpu),
+        # System Status
+        "uptime": run_cmd("uptime -p"),
+        "boot_time": datetime.datetime.fromtimestamp(
+            psutil.boot_time()
+        ).strftime("%Y-%m-%d %H:%M:%S"),
 
-    # Memory
-    "memory": memory,
-    "total_memory": round(psutil.virtual_memory().total / (1024**3), 2),
-    "available_memory": round(psutil.virtual_memory().available / (1024**3), 2),
-    "memory_color": get_status(memory),
+        # CPU
+        "cpu": cpu,
+        "cpu_count": psutil.cpu_count(logical=True),
+        "cpu_frequency": round(psutil.cpu_freq().current, 2) if psutil.cpu_freq() else 0,
+        "cpu_color": get_status(cpu),
 
-    # Disk
-    "disk": disk,
-    "disk_total": round(psutil.disk_usage("/").total / (1024**3), 2),
-    "disk_free": round(psutil.disk_usage("/").free / (1024**3), 2),
-    "disk_color": get_status(disk),
+        # Memory
+        "memory": memory,
+        "total_memory": round(psutil.virtual_memory().total / (1024**3), 2),
+        "available_memory": round(psutil.virtual_memory().available / (1024**3), 2),
+        "memory_color": get_status(memory),
 
-    # Load Average
-    "loadavg": loadavg,
+        # Disk
+        "disk": disk,
+        "disk_total": round(psutil.disk_usage("/").total / (1024**3), 2),
+        "disk_free": round(psutil.disk_usage("/").free / (1024**3), 2),
+        "disk_color": get_status(disk),
 
-    # Users
-    "users": run_cmd("who"),
-    "ssh_users": run_cmd("who | grep -i pts || true"),
+        # Load Average
+        "loadavg": loadavg,
 
-    # Services
-    "services": {
-        "sshd": run_cmd("systemctl is-active sshd 2>/dev/null"),
-        "firewalld": run_cmd("systemctl is-active firewalld 2>/dev/null"),
-        "crond": run_cmd("systemctl is-active crond 2>/dev/null")
-    }
-})
+        # Users
+        "users": run_cmd("who"),
+        "ssh_users": run_cmd("who | grep -i pts || true"),
+
+        # Services
+        "services": {
+            "sshd": run_cmd("systemctl is-active sshd 2>/dev/null"),
+            "firewalld": run_cmd("systemctl is-active firewalld 2>/dev/null"),
+            "crond": run_cmd("systemctl is-active crond 2>/dev/null")
+        }
+    })
 
 
 @app.route("/api/logs")
@@ -209,5 +263,6 @@ def export():
 
 if __name__ == "__main__":
     init_db()
-    port = int(os.getenv("PORT", 8080))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    host = os.getenv("HOST", "127.0.0.1" if os.name == "nt" else "0.0.0.0")
+    port = int(os.getenv("PORT", 5000 if os.name == "nt" else 8080))
+    app.run(host=host, port=port, debug=True)

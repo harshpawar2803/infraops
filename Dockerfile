@@ -1,16 +1,24 @@
-FROM python:3.13-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Install required Linux utilities
+RUN apt-get update && apt-get install -y \
+    procps \
+    iproute2 \
+    curl \
+    iputils-ping \
+    net-tools \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Copy application files
 COPY . .
 
-ENV PORT=8080
-ENV DATA_DIR=/opt/infraops
+# Install Python packages
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Application port
 EXPOSE 8080
 
+# Start application
 CMD ["python", "app.py"]

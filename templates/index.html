@@ -10,9 +10,9 @@
 <div class="sidebar">
     <div class="logo">
         <div class="logo-circle">S</div>
-<h2>InfraOps</h2>
-<p>Enterprise Monitoring Platform</p>    
-</div>
+        <h2>InfraOps</h2>
+        <p>Enterprise Monitoring Platform</p>
+    </div>
 
     <a>🏠 Dashboard</a>
     <a>📊 Server Load</a>
@@ -27,47 +27,73 @@
     <div class="header">
         <div>
             <h1>🚀 InfraOps Server Monitor</h1>
-            <p>Professional Linux Monitoring Dashboard for RHEL 10</p>
+            <p>Professional Linux Monitoring Dashboard</p>
         </div>
+
         <div class="author">
-<b>Developer:</b> Harsh Pawar<br>
-<b>Project:</b> InfraOps
+            <b>Developer:</b> Harsh Pawar<br>
+            <b>Project:</b> InfraOps v2
         </div>
     </div>
 
     <div class="top">
-    <div class="card">
-        🖥 Hostname
-        <span id="hostname"></span>
-    </div>
 
-    <div class="card">
-        💻 Operating System
-        <span id="os"></span>
-    </div>
+        <div class="card">
+            🖥 Hostname
+            <span id="hostname"></span>
+        </div>
 
-    <div class="card">
-        ⚙ Kernel
-        <span id="kernel"></span>
-    </div>
+        <div class="card">
+            💻 Operating System
+            <span id="os"></span>
+        </div>
 
-    <div class="card">
-        🏗 Architecture
-        <span id="architecture"></span>
-    </div>
+        <div class="card">
+            ⚙ Kernel
+            <span id="kernel"></span>
+        </div>
 
-    <div class="card">
-        🌐 IP Address
-        <span id="ip"></span>
-    </div>
+        <div class="card">
+            🏗 Architecture
+            <span id="architecture"></span>
+        </div>
 
-    <div class="card">
-        ⏱ Uptime
-        <span id="uptime"></span>
+        <div class="card">
+            🌐 IP Address
+            <span id="ip"></span>
+        </div>
+
+        <div class="card">
+            ⏱ Uptime
+            <span id="uptime"></span>
+        </div>
+
+        <!-- AWS SECTION -->
+
+        <div class="card">
+            🆔 EC2 Instance ID
+            <span id="instance_id"></span>
+        </div>
+
+        <div class="card">
+            🖥 Instance Type
+            <span id="instance_type"></span>
+        </div>
+
+        <div class="card">
+            🌍 AWS Region
+            <span id="region"></span>
+        </div>
+
+        <div class="card">
+            📍 Availability Zone
+            <span id="availability_zone"></span>
+        </div>
+
     </div>
-</div>
 
     <div class="grid">
+
         <div class="box">
             <h2>CPU Usage</h2>
             <h3 id="cpu">0%</h3>
@@ -85,6 +111,7 @@
             <h3 id="disk">0%</h3>
             <canvas id="diskChart"></canvas>
         </div>
+
     </div>
 
     <div class="box">
@@ -98,6 +125,7 @@
     </div>
 
     <div class="grid">
+
         <div class="box">
             <h2>👥 Current Login Users</h2>
             <pre id="users"></pre>
@@ -107,9 +135,11 @@
             <h2>🔐 SSH Remote Users</h2>
             <pre id="ssh_users"></pre>
         </div>
+
     </div>
 
     <div class="box alert-box">
+
         <h2>🚨 Security Alerts</h2>
 
         <h3>❌ Failed Password Logs</h3>
@@ -120,23 +150,35 @@
 
         <h3>📡 Telnet Logs</h3>
         <pre id="telnet"></pre>
+
     </div>
 
     <div class="box">
+
         <h2>📜 System Logs Viewer</h2>
-        <input type="text" id="search" placeholder="Search logs here...">
+
+        <input
+            type="text"
+            id="search"
+            placeholder="Search logs here...">
+
         <button onclick="loadLogs()">Search</button>
+
         <pre id="logs"></pre>
+
     </div>
 
-    <a href="/export" class="btn">⬇ Download CSV Report</a>
+    <a href="/export" class="btn">
+        ⬇ Download CSV Report
+    </a>
 
     <div class="footer">
-        Designed and Developed by Harsh Pawar    </div>
+        Designed and Developed by <b>Harsh Pawar</b>
+    </div>
 
 </div>
 
 <script src="/static/script.js"></script>
+
 </body>
 </html>
-
